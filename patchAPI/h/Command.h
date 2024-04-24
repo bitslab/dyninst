@@ -123,17 +123,20 @@ class PATCHAPI_EXPORT PushBackCommand : public Command {
     }
     PushBackCommand(Dyninst::PatchAPI::Point* pt,
                     Dyninst::PatchAPI::SnippetPtr snip)
-                    : pt_(pt), snip_(snip) {}
+                    : pt_(pt), snip_(snip), recursiveGuard_(true) {}
     virtual ~PushBackCommand() {}
 
     virtual bool run();
     virtual bool undo();
     InstancePtr instance() { return instance_; }
+    void disableRecursiveGuard() { recursiveGuard_ = false; }
+    bool recursiveGuardEnabled() const { return recursiveGuard_; }
 
   private:
     Dyninst::PatchAPI::Point* pt_;
     Dyninst::PatchAPI::SnippetPtr snip_;
     Dyninst::PatchAPI::InstancePtr instance_;
+    bool recursiveGuard_;
 };
 
 class PATCHAPI_EXPORT RemoveSnippetCommand : public Command {

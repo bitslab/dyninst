@@ -76,6 +76,10 @@ PatchEdge::trg() {
   return trg_;
 }
 
+void PatchEdge::set_trg(PatchBlock* new_trg) {
+  trg_ = new_trg;
+}
+
 PatchEdge::~PatchEdge() {
 }
 

@@ -441,22 +441,28 @@ bool BinaryEdit::isMultiThreadCapable()
    return archSpecificMultithreadCapable();
 }
 
-bool BinaryEdit::getAllDependencies(std::map<std::string, BinaryEdit*>& deps)
+bool BinaryEdit::getAllDependencies(std::map<std::string, BinaryEdit*>& deps, std::set<std::string> &visited)
 {
    Symtab *symtab = mobj->parse_img()->getObject();
    std::deque<std::string> depends;
    depends.insert(depends.end(), symtab->getDependencies().begin(), symtab->getDependencies().end());
+
    while(!depends.empty())
    {
      std::string lib = depends.front();
-     if(deps.find(lib) == deps.end()) {
+     /* Nilanjana - some libraries were getting loaded multiple times because of multiple paths
+      * to the same library node. Because of this, map between code object & patch object in loadObject()
+      * was getting overwritten, leading to ambiguity during code transformation. 'visited' set is 
+      * used to check for duplicate traversal. */
+     if(visited.find(lib) == visited.end()) {
         std::map<std::string, BinaryEdit*> res;
         if(!openResolvedLibraryName(lib, res)) return false;
          std::map<std::string, BinaryEdit*>::iterator bedit_it;
          for(bedit_it = res.begin(); bedit_it != res.end(); ++bedit_it) {
            if (bedit_it->second) {
              deps.insert(*bedit_it);
-             if(!bedit_it->second->getAllDependencies(deps))
+             visited.insert(lib);
+             if(!bedit_it->second->getAllDependencies(deps, visited))
              {
                return false;
              }
