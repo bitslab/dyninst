@@ -57,8 +57,6 @@
 #include "RegisterConversion.h"
 #include "unaligned_memory_access.h"
 
-#define USE_STACK
-
 const int EmitterIA32::mt_offset = -4;
 #if defined(arch_x86_64)
 const int EmitterAMD64::mt_offset = -8;
@@ -1878,8 +1876,8 @@ Register EmitterAMD64::emitCall(opCode op, codeGen &gen, const std::vector<AstNo
 
    // RAX = number of FP regs used by varargs on AMD64 (also specified as caller-saved).
    //Clobber it to 0.
-   emitMovImmToReg64(REGNUM_RAX, 0, true, gen);
-   gen.markRegDefined(REGNUM_RAX);
+   //emitMovImmToReg64(REGNUM_RAX, 0, true, gen);
+   //gen.markRegDefined(REGNUM_RAX);
 
    emitCallInstruction(gen, callee, Null_Register);
 
@@ -1929,8 +1927,8 @@ Register EmitterAMD64::emitCall(opCode op, codeGen &gen, const std::vector<AstNo
    // We do this now because the state is correct again in the RS.
 
    Register ret = gen.rs()->allocateRegister(gen, noCost);
-   gen.markRegDefined(ret);
-   emitMovRegToReg64(ret, REGNUM_EAX, true, gen);
+   //gen.markRegDefined(ret);
+   //emitMovRegToReg64(ret, REGNUM_EAX, true, gen);
 
     
    // Now restore any registers live over the call
@@ -1987,7 +1985,7 @@ bool EmitterAMD64Stat::emitCallInstruction(codeGen &gen, func_instance *callee, 
    // find func_instance reference in address space
    // (refresh func_map)
    std::vector<func_instance *> funcs;
-   addrSpace->findFuncsByAll(callee->prettyName(), funcs);
+   //addrSpace->findFuncsByAll(callee->prettyName(), funcs);
 
    // test to see if callee is in a shared module
    assert(gen.func());
@@ -2451,6 +2449,8 @@ bool EmitterAMD64::emitBTSaves(baseTramp* bt,  codeGen &gen)
          continue;
       if (createFrame && reg->encoding() == REGNUM_RBP)
          continue;
+     /* We dont want to save anything */
+     continue; 
       num_to_save++;
    }
    if (createFrame) {
@@ -2491,6 +2491,9 @@ bool EmitterAMD64::emitBTSaves(baseTramp* bt,  codeGen &gen)
            continue; 
       if (createFrame && reg->encoding() == REGNUM_RBP)
            continue;
+      /* We dont want to save anything */
+      gen.rs()->markSavedRegister(reg->encoding(), num_to_save-num_saved);
+      continue;
       emitPushReg64(reg->encoding(),gen);
       // We move the FP down to just under here, so we're actually
       // measuring _up_ from the FP. 
@@ -2687,25 +2690,6 @@ bool EmitterAMD64::emitBTRestores(baseTramp* bt, codeGen &gen)
       restoreFlags = true;
    }
 
-#ifdef USE_STACK
-   // Nilanjana: Change the value of the rax at the top of the stack with the return value
-   int popCount = 0;
-   if(createFrame)
-      popCount += 2;
-   if(saveOrigAddr)
-      popCount++;
-   if(restoreFlags)
-      popCount++;
-   for (int i = gen.rs()->numGPRs() - 1; i >= 0; i--) {
-      registerSlot *reg = gen.rs()->GPRs()[i];
-      if (reg->encoding() == REGNUM_RBP && createFrame)
-          continue;
-      if (reg->liveState == registerSlot::spilled)
-        popCount++;
-   }
-   emitStoreRelative(REGNUM_RAX, ((popCount)*8), REGNUM_RBP, 8, gen);
-#endif
-
    if (useFPRs) {
       // restore saved FP state
       // fxrstor (%rsp) ; 0x0f 0xae 0x04 0x24
@@ -2763,6 +2747,8 @@ bool EmitterAMD64::emitBTRestores(baseTramp* bt, codeGen &gen)
       }
 
       if (reg->liveState == registerSlot::spilled) {
+	 /* We dont want to save anything */
+	 continue;
          emitPopReg64(reg->encoding(),gen);
       }
    }
