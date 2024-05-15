@@ -65,7 +65,6 @@ AddrSpace::loadObject(PatchObject* obj) {
 }
 
 AddrSpace::~AddrSpace() {
-  std::cerr << obj_map_.size() << " objects\n";
   for (ObjMap::iterator i = obj_map_.begin(); i != obj_map_.end(); i++) {
     PatchObject* obj = i->second;
     delete obj;

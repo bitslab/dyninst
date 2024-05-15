@@ -1903,8 +1903,8 @@ Register EmitterAMD64::emitCall(opCode op, codeGen &gen, const std::vector<AstNo
 
    // RAX = number of FP regs used by varargs on AMD64 (also specified as caller-saved).
    //Clobber it to 0.
-   emitMovImmToReg64(REGNUM_RAX, 0, true, gen);
-   gen.markRegDefined(REGNUM_RAX);
+   //emitMovImmToReg64(REGNUM_RAX, 0, true, gen);
+   //gen.markRegDefined(REGNUM_RAX);
 
    emitCallInstruction(gen, callee, REG_NULL);
 
@@ -1954,8 +1954,8 @@ Register EmitterAMD64::emitCall(opCode op, codeGen &gen, const std::vector<AstNo
    // We do this now because the state is correct again in the RS.
 
    Register ret = gen.rs()->allocateRegister(gen, noCost);
-   gen.markRegDefined(ret);
-   emitMovRegToReg64(ret, REGNUM_EAX, true, gen);
+   //gen.markRegDefined(ret);
+   //emitMovRegToReg64(ret, REGNUM_EAX, true, gen);
 
     
    // Now restore any registers live over the call
@@ -2012,7 +2012,7 @@ bool EmitterAMD64Stat::emitCallInstruction(codeGen &gen, func_instance *callee, 
    // find func_instance reference in address space
    // (refresh func_map)
    std::vector<func_instance *> funcs;
-   addrSpace->findFuncsByAll(callee->prettyName(), funcs);
+   //addrSpace->findFuncsByAll(callee->prettyName(), funcs);
 
    // test to see if callee is in a shared module
    assert(gen.func());
@@ -2487,6 +2487,8 @@ bool EmitterAMD64::emitBTSaves(baseTramp* bt,  codeGen &gen)
    bool saveFlags = gen.rs()->checkVolatileRegisters(gen, registerSlot::live);
    bool createFrame = !bt || bt->needsFrame() || useFPRs;
    bool saveOrigAddr = createFrame && bt->instP();
+
+	useFPRs = saveFlags =  saveOrigAddr = createFrame = alignStack= 0;
    // Stores the offset to the location of the previous SP stored 
    // in the stack when a frame is created. 
    uint64_t sp_offset = 0;
@@ -2499,6 +2501,19 @@ bool EmitterAMD64::emitBTSaves(baseTramp* bt,  codeGen &gen)
          continue;
       if (createFrame && reg->encoding() == REGNUM_RBP)
          continue;
+      switch(reg->encoding()) {
+	      case REGNUM_RAX:
+	      case REGNUM_RCX:
+	      case REGNUM_RDX:
+	      case REGNUM_RSI:
+	      case REGNUM_RDI:
+	      case REGNUM_R8:
+	      case REGNUM_R9:
+	      case REGNUM_R10:
+	      case REGNUM_R11:
+	      default:
+		      continue;
+      }
       num_to_save++;
    }
    if (createFrame) {
@@ -2539,6 +2554,20 @@ bool EmitterAMD64::emitBTSaves(baseTramp* bt,  codeGen &gen)
            continue; 
       if (createFrame && reg->encoding() == REGNUM_RBP)
            continue;
+      switch(reg->encoding()) {
+              case REGNUM_RAX:
+              case REGNUM_RCX:
+              case REGNUM_RDX:
+              case REGNUM_RSI:
+              case REGNUM_RDI:
+              case REGNUM_R8:
+              case REGNUM_R9:
+              case REGNUM_R10:
+              case REGNUM_R11:
+              default:
+		gen.rs()->markSavedRegister(reg->encoding(), num_to_save-num_saved);
+                      continue;
+      }
       emitPushReg64(reg->encoding(),gen);
       // We move the FP down to just under here, so we're actually
       // measuring _up_ from the FP. 
@@ -2792,6 +2821,7 @@ bool EmitterAMD64::emitBTRestores(baseTramp* bt, codeGen &gen)
       }
 
       if (reg->liveState == registerSlot::spilled) {
+	 continue; 
          emitPopReg64(reg->encoding(),gen);
       }
    }

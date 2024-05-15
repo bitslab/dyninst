@@ -70,6 +70,7 @@ class PATCHAPI_EXPORT PatchEdge {
    ParseAPI::Edge *edge() const;
    PatchBlock *src();
    PatchBlock *trg();
+   void set_trg(PatchBlock *);
    ParseAPI::EdgeTypeEnum type() const;
    bool sinkEdge() const;
    bool interproc() const;

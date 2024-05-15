@@ -99,7 +99,8 @@ BPatch_binaryEdit::BPatch_binaryEdit(const char *path, bool openDependencies) :
   llBinEdits[path] = origBinEdit;
 
   if(openDependencies) {
-    origBinEdit->getAllDependencies(llBinEdits);
+    std::set<std::string> visited;
+    origBinEdit->getAllDependencies(llBinEdits, visited);
   }
   std::map<std::string, BinaryEdit*>::iterator i, j;
 
@@ -237,8 +238,13 @@ bool BPatch_binaryEdit::writeFile(const char * outFile)
      if (!bin->isDirty())
        continue;
 
-     std::string newname = bin->getMappedObject()->fileName();
-     if( !bin->writeFile(newname) ) return false;
+     char *outFileCopy = strdup(outFile);
+     std::string newname = dirname(outFileCopy) + std::string("/") + bin->getMappedObject()->fileName();
+     ret = bin->writeFile(newname);
+     if(outFileCopy) std::free(outFileCopy);
+     if( !ret ) {
+       return ret;
+     }
    }
    return ret;
 }
@@ -314,8 +320,10 @@ BPatch_object *BPatch_binaryEdit::loadLibrary(const char *libname, bool deps)
     lib.second->setupRTLibrary(rtLib);
     lib.second->setMultiThreadCapable(isMultiThreadCapable());
 
-    if (deps)
-      if( !lib.second->getAllDependencies(llBinEdits) ) return NULL;
+    if (deps) {
+      std::set<std::string> visited;
+      if( !lib.second->getAllDependencies(llBinEdits, visited) ) return NULL;
+    }
 
    }
    origBinEdit->addLibraryPrereq(libname);
