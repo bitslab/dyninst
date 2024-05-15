@@ -57,8 +57,6 @@
 #include "RegisterConversion.h"
 #include "unaligned_memory_access.h"
 
-#define USE_STACK
-
 const int EmitterIA32::mt_offset = -4;
 #if defined(arch_x86_64)
 const int EmitterAMD64::mt_offset = -8;
@@ -2686,25 +2684,6 @@ bool EmitterAMD64::emitBTRestores(baseTramp* bt, codeGen &gen)
       skippedRedZone = true; // Obviated by alignStack, but hey
       restoreFlags = true;
    }
-
-#ifdef USE_STACK
-   // Nilanjana: Change the value of the rax at the top of the stack with the return value
-   int popCount = 0;
-   if(createFrame)
-      popCount += 2;
-   if(saveOrigAddr)
-      popCount++;
-   if(restoreFlags)
-      popCount++;
-   for (int i = gen.rs()->numGPRs() - 1; i >= 0; i--) {
-      registerSlot *reg = gen.rs()->GPRs()[i];
-      if (reg->encoding() == REGNUM_RBP && createFrame)
-          continue;
-      if (reg->liveState == registerSlot::spilled)
-        popCount++;
-   }
-   emitStoreRelative(REGNUM_RAX, ((popCount)*8), REGNUM_RBP, 8, gen);
-#endif
 
    if (useFPRs) {
       // restore saved FP state

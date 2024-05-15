@@ -59,7 +59,6 @@ bool PatchModifier::redirect(PatchEdge *edge, PatchBlock *target) {
    PatchBlock *oldTrg = edge->trg();
    ParseAPI::Block *llTrg = (target == NULL) ? NULL : target->block();
    if (!ParseAPI::CFGModifier::redirect(edge->edge(), llTrg)) return false;
-   edge->set_trg(target);
 
    std::vector<PatchFunction *> funcs;
    src->getFuncs(std::back_inserter(funcs));

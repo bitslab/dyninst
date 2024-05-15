@@ -164,7 +164,7 @@ class BinaryEdit : public AddressSpace {
 
    void setupRTLibrary(std::vector<BinaryEdit *> &r);
    std::vector<BinaryEdit *> &rtLibrary();
-   bool getAllDependencies(std::map<std::string, BinaryEdit* > &deps, std::set<std::string> &visited);
+   bool getAllDependencies(std::map<std::string, BinaryEdit* > &deps);
 
    void markDirty();
    bool isDirty();

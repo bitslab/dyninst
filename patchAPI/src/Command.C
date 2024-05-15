@@ -136,8 +136,6 @@ bool PushFrontCommand::undo() {
 
 bool PushBackCommand::run() {
   instance_ = pt_->pushBack(snip_);
-  if(!recursiveGuardEnabled())
-    instance_->disableRecursiveGuard();
   return true;
 }
 

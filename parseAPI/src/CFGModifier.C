@@ -105,7 +105,6 @@ bool CFGModifier::redirect(Edge *edge, Block *target) {
       }
 
       edge->_target_off = target->low();
-      edge->_target = target;
       target->addSource(edge);
       target->obj()->_pcb->addEdge(target, edge, ParseCallback::source);
       edge->src()->obj()->_pcb->modifyEdge(edge, target, ParseCallback::target);
