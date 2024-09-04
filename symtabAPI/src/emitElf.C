@@ -131,8 +131,18 @@ emitElf<ElfTypes>::emitElf(Elf_X *oldElfHandle_, bool isStripped_, Object *obj_,
 template<typename ElfTypes>
 bool emitElf<ElfTypes>::cannotRelocatePhdrs()
 {
+/*
+**	TODO: ssing214
+**	      For glibc alignmnet test, we had fix here which was just returing false,		
+**            And glibc test were running fine. But when we run a instrumented binary
+**            in compound; compound crashed, need to figure out a actual cause here.
+**
+** 	      Test: glibc/elf/tst-align3.c
+** 	      For more info see: https://github.com/dyninst/dyninst/discussions/1764
+**
+*/
 //#if defined(bug_phdrs_first_page)
-    return true;
+    return true; //false;
 //#else
     //  return false;
 //#endif

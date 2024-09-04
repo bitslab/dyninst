@@ -1766,7 +1766,9 @@ bool EmitterAMD64::clobberAllFuncCall( registerSpace *rs,
    return true;
 }
 
-
+/* https://en.wikipedia.org/wiki/Red_zone_(computing) */
+#define RED_ZONE_LEN 128
+#define SKIP_RED_ZONE
 
 static Register amd64_arg_regs[] = {REGNUM_RDI, REGNUM_RSI, REGNUM_RDX, REGNUM_RCX, REGNUM_R8, REGNUM_R9};
 #define AMD64_ARG_REGS (sizeof(amd64_arg_regs) / sizeof(Register))
@@ -1853,6 +1855,12 @@ Register EmitterAMD64::emitCall(opCode op, codeGen &gen, const std::vector<AstNo
    int alignment = (savedRegsToRestore.size() + stack_operands) * 8;
    if (alignment % AMD64_STACK_ALIGNMENT)
       alignment = AMD64_STACK_ALIGNMENT - (alignment % AMD64_STACK_ALIGNMENT);
+
+#ifdef SKIP_RED_ZONE
+      /* We assume that agrs will be passed through registers only */
+      /* This will fail if args are pushed into stack */
+      alignment += RED_ZONE_LEN;
+#endif
 
    if (alignment) {
       emitLEA(REGNUM_RSP, Null_Register, 0, -alignment,
