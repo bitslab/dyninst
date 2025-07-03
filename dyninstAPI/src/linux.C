@@ -210,6 +210,7 @@ bool BinaryEdit::getResolvedLibraryPath(const string &filename, std::vector<stri
        free(libPathStr);
     }
 
+cout << "Resolving: " << filename << " DYNINST_REWRITER_PATHS: " << (dyn_path?dyn_path:"") << " LD_LIBRARY_PATH: "<< (ld_path?ld_path:"") << "\n";
 #ifdef DYNINST_COMPILER_SEARCH_DIRS
     // search compiler-specific library paths
     // NB1: DYNINST_COMPILER_SEARCH_DIRS is defined at build time
@@ -219,13 +220,15 @@ bool BinaryEdit::getResolvedLibraryPath(const string &filename, std::vector<stri
 		#define xstr(s) str(s)
 		#define str(s) #s
 
-		libPathStr = strdup(xstr(DYNINST_COMPILER_SEARCH_DIRS));
-		libPath = strtok(libPathStr, ":");
-		while (libPath != NULL) {
-			libPaths.emplace_back(libPath);
-			libPath = strtok(NULL, ":");
-		}
-		free(libPathStr);
+		// libPathStr = strdup(xstr(DYNINST_COMPILER_SEARCH_DIRS));
+		// libPath = strtok(libPathStr, ":");
+		// while (libPath != NULL) {
+		// 	libPaths.emplace_back(libPath);
+		// 	libPath = strtok(NULL, ":");
+		// }
+		// free(libPathStr);
+
+        // cout << "Resolving: " << filename << " DYNINST_COMPILER_SEARCH: " << xstr(DYNINST_COMPILER_SEARCH_DIRS) << std::endl;
 
 		#undef str
 		#undef xstr
@@ -260,6 +263,8 @@ bool BinaryEdit::getResolvedLibraryPath(const string &filename, std::vector<stri
             while (*pos != '\n' && *pos != '\0') pos++;
             *pos = '\0';
             if (strcmp(key, filename.c_str()) == 0) {
+                        cout << "Resolving: " << filename << " ldconfig found: " << val << std::endl;
+
                 paths.push_back(val);
             }
         }

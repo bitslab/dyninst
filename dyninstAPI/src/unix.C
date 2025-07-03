@@ -566,6 +566,10 @@ mapped_object *BinaryEdit::openResolvedLibraryName(std::string filename,
     return nullptr;
   }
 
+  for(auto const &path : paths) {
+     cout << "Looking for " << filename << " in " << path << std::endl;
+  }
+  
   // A little helper to fix some clunky checks
   auto is_compatible = [this](std::string const &path, std::string const &member) {
     auto temp = std::unique_ptr<BinaryEdit>{BinaryEdit::openFile(path, mgr(), patcher(), member)};

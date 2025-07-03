@@ -2002,7 +2002,9 @@ dyn_scnp, Elf_X_Data &symdata,
     Elf_X_Versym symVersions;
     Elf_X_Verdef *symVersionDefs = NULL;
     Elf_X_Verneed *symVersionNeeds = NULL;
+    printf("Parsing .dynamic: %d tags\n",dyns.count());
     for (unsigned i = 0; i < dyns.count(); ++i) {
+        printf("Tag %x = %x\n",dyns.d_tag(i),dyns.d_ptr(i));
         switch (dyns.d_tag(i)) {
             case DT_NEEDED:
                 if(strs) deps_.push_back(&strs[dyns.d_ptr(i)]);
@@ -2023,7 +2025,10 @@ dyn_scnp, Elf_X_Data &symdata,
                 verdefnum = dyns.d_ptr(i);
                 break;
             case DT_SONAME:
-                if(strs) soname_ = &strs[dyns.d_ptr(i)];
+                if(strs) { 
+                    soname_ = &strs[dyns.d_ptr(i)];
+                    printf("Parsing shared object %s\n",soname_);
+                }
             default:
                 break;
         }

@@ -458,6 +458,7 @@ bool BinaryEdit::getAllDependencies(std::map<std::string, BinaryEdit*>& deps, st
       * used to check for duplicate traversal. */
      if(visited.find(lib) == visited.end()) {
         std::map<std::string, BinaryEdit*> res;
+        cout << "Dependency: " << lib << std::endl; 
         if(!openResolvedLibraryName(lib, res)) return false;
          std::map<std::string, BinaryEdit*>::iterator bedit_it;
          for(bedit_it = res.begin(); bedit_it != res.end(); ++bedit_it) {

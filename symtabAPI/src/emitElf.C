@@ -2395,6 +2395,7 @@ void emitElf<ElfTypes>::createDynamicSection(void *dynData_, unsigned size, Elf_
     dynamicSecData.clear();
     Elf_Dyn *dyns = (Elf_Dyn *) dynData_;
     unsigned count = size / sizeof(Elf_Dyn);
+    printf("Found %u .dynamic entries.\n",count);
     vector<string> &libs_rmd = object->libsRMd();
     dynsecSize = 2 * (count + DT_NEEDEDEntries.size() + new_dynamic_entries.size());
     dynsecData = (Elf_Dyn *) malloc(dynsecSize * sizeof(Elf_Dyn));
@@ -2450,6 +2451,8 @@ void emitElf<ElfTypes>::createDynamicSection(void *dynData_, unsigned size, Elf_
     bool foundHashSection = false;
 
     for (unsigned i = 0; i < count; i++) {
+        printf("%u: .dynamic entry tag %x: %x.\n",i,dyns[i].d_tag,dyns[i].d_un.d_val);
+
         switch (dyns[i].d_tag) {
             case DT_NULL:
                 break;
@@ -2522,10 +2525,21 @@ void emitElf<ElfTypes>::createDynamicSection(void *dynData_, unsigned size, Elf_
                 dynamicSecData[dyns[i].d_tag].push_back(dynsecData + curpos);
                 curpos++;
                 break;
-            default:
-                memcpy(dynsecData + curpos, dyns + i, sizeof(Elf_Dyn));
-                dynamicSecData[dyns[i].d_tag].push_back(dynsecData + curpos);
-                curpos++;
+
+                case DT_FLAGS: case DT_FLAGS_1: 
+                case DT_STRTAB: case DT_STRSZ: 
+                case DT_SYMTAB: case DT_SYMENT:
+                case DT_PLTREL: case DT_PLTRELSZ:
+//                case DT_RELASZ: case DT_RELA: case DT_RELAENT: 
+                case DT_VERNEED: case DT_VERNEEDNUM: 
+                case DT_VERDEF: case DT_VERDEFNUM:                
+                case DT_VERSYM:
+                case DT_RELACOUNT:
+                default:
+                    memcpy(dynsecData + curpos, dyns + i, sizeof(Elf_Dyn));
+                    dynamicSecData[dyns[i].d_tag].push_back(dynsecData + curpos);
+                    curpos++;
+                    break;
                 break;
         }
     }
