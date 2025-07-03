@@ -2395,7 +2395,6 @@ void emitElf<ElfTypes>::createDynamicSection(void *dynData_, unsigned size, Elf_
     dynamicSecData.clear();
     Elf_Dyn *dyns = (Elf_Dyn *) dynData_;
     unsigned count = size / sizeof(Elf_Dyn);
-    printf("Found %u .dynamic entries.\n",count);
     vector<string> &libs_rmd = object->libsRMd();
     dynsecSize = 2 * (count + DT_NEEDEDEntries.size() + new_dynamic_entries.size());
     dynsecData = (Elf_Dyn *) malloc(dynsecSize * sizeof(Elf_Dyn));
@@ -2451,8 +2450,6 @@ void emitElf<ElfTypes>::createDynamicSection(void *dynData_, unsigned size, Elf_
     bool foundHashSection = false;
 
     for (unsigned i = 0; i < count; i++) {
-        printf("%u: .dynamic entry tag %x: %x.\n",i,dyns[i].d_tag,dyns[i].d_un.d_val);
-
         switch (dyns[i].d_tag) {
             case DT_NULL:
                 break;
